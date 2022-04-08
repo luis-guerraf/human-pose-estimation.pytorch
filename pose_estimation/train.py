@@ -20,7 +20,7 @@ import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 
 import _init_paths
 from core.config import config
@@ -99,17 +99,17 @@ def main():
         os.path.join(this_dir, '../lib/models', config.MODEL.NAME + '.py'),
         final_output_dir)
 
-    writer_dict = {
-        'writer': SummaryWriter(log_dir=tb_log_dir),
-        'train_global_steps': 0,
-        'valid_global_steps': 0,
-    }
+    # writer_dict = {
+    #     'writer': SummaryWriter(log_dir=tb_log_dir),
+    #     'train_global_steps': 0,
+    #     'valid_global_steps': 0,
+    # }
 
     dump_input = torch.rand((config.TRAIN.BATCH_SIZE,
                              3,
                              config.MODEL.IMAGE_SIZE[1],
                              config.MODEL.IMAGE_SIZE[0]))
-    writer_dict['writer'].add_graph(model, (dump_input, ), verbose=False)
+    # writer_dict['writer'].add_graph(model, (dump_input, ), verbose=False)
 
     gpus = [int(i) for i in config.GPUS.split(',')]
     model = torch.nn.DataParallel(model, device_ids=gpus).cuda()
@@ -138,6 +138,7 @@ def main():
             normalize,
         ])
     )
+
     valid_dataset = eval('dataset.'+config.DATASET.DATASET)(
         config,
         config.DATASET.ROOT,
@@ -148,6 +149,9 @@ def main():
             normalize,
         ])
     )
+
+    train_dataset = torch.utils.data.Subset(train_dataset, [115786, 68313, 126145, 73486, 114995, 142178])
+    valid_dataset = torch.utils.data.Subset(valid_dataset, [5249, 261, 1487, 945, 1310, 3756, 5405, 3012, 505])
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -171,13 +175,13 @@ def main():
 
         # train for one epoch
         train(config, train_loader, model, criterion, optimizer, epoch,
-              final_output_dir, tb_log_dir, writer_dict)
+              final_output_dir, tb_log_dir)
 
 
         # evaluate on validation set
         perf_indicator = validate(config, valid_loader, valid_dataset, model,
                                   criterion, final_output_dir, tb_log_dir,
-                                  writer_dict)
+                                  )
 
         if perf_indicator > best_perf:
             best_perf = perf_indicator
@@ -199,7 +203,7 @@ def main():
     logger.info('saving final model state to {}'.format(
         final_model_state_file))
     torch.save(model.module.state_dict(), final_model_state_file)
-    writer_dict['writer'].close()
+    # writer_dict['writer'].close()
 
 
 if __name__ == '__main__':

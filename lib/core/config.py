@@ -49,7 +49,7 @@ MODEL_EXTRAS = {
 # common params for NETWORK
 config.MODEL = edict()
 config.MODEL.NAME = 'pose_resnet'
-config.MODEL.INIT_WEIGHTS = True
+config.MODEL.INIT_WEIGHTS = False
 config.MODEL.PRETRAINED = ''
 config.MODEL.NUM_JOINTS = 16
 config.MODEL.IMAGE_SIZE = [256, 256]  # width * height, ex: 192 * 256
@@ -62,8 +62,8 @@ config.LOSS.USE_TARGET_WEIGHT = True
 
 # DATASET related params
 config.DATASET = edict()
-config.DATASET.ROOT = ''
-config.DATASET.DATASET = 'mpii'
+config.DATASET.ROOT = '~/data/Datasets/COCO'
+config.DATASET.DATASET = 'coco'
 config.DATASET.TRAIN_SET = 'train'
 config.DATASET.TEST_SET = 'valid'
 config.DATASET.DATA_FORMAT = 'jpg'
@@ -158,7 +158,7 @@ def _update_dict(k, v):
 def update_config(config_file):
     exp_config = None
     with open(config_file) as f:
-        exp_config = edict(yaml.load(f))
+        exp_config = edict(yaml.safe_load(f))
         for k, v in exp_config.items():
             if k in config:
                 if isinstance(v, dict):
